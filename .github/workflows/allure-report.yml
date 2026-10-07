@@ -1,0 +1,115 @@
+name: Publish Allure Report
+
+# Merges the results of both test workflows for the same commit into ONE Allure report and
+# publishes it to GitHub Pages. It is triggered whenever either test workflow finishes; it only
+# publishes once results from BOTH are available, so the second completion does the work.
+#
+# One-time setup: Settings -> Pages -> Build and deployment -> Source: "GitHub Actions".
+
+on:
+  workflow_run:
+    workflows: ["API & Web Tests", "Mobile Tests"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: allure-pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Merge results and publish to GitHub Pages
+    # Publish only the default branch (pushes), never pull requests
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_branch == github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+
+    steps:
+      - name: Check out the tested commit
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Find completed test runs for this commit
+        id: runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          latest_completed() {
+            gh run list --repo "$GITHUB_REPOSITORY" --workflow "$1" --commit "$SHA" \
+              --json databaseId,status --jq '[.[] | select(.status == "completed")][0].databaseId // empty'
+          }
+          api_web=$(latest_completed api-web-tests.yml)
+          mobile=$(latest_completed mobile-tests.yml)
+          echo "api_web=$api_web" >> "$GITHUB_OUTPUT"
+          echo "mobile=$mobile" >> "$GITHUB_OUTPUT"
+          if [ -n "$api_web" ] && [ -n "$mobile" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Waiting for the other test workflow (api-web=$api_web, mobile=$mobile); nothing to publish yet"
+          fi
+
+      - name: Download API & Web results
+        if: steps.runs.outputs.ready == 'true'
+        uses: actions/download-artifact@v8
+        with:
+          name: allure-results-api-web
+          path: allure-results
+          run-id: ${{ steps.runs.outputs.api_web }}
+          github-token: ${{ github.token }}
+
+      - name: Download Mobile results
+        if: steps.runs.outputs.ready == 'true'
+        uses: actions/download-artifact@v8
+        with:
+          name: allure-results-mobile
+          path: allure-results
+          run-id: ${{ steps.runs.outputs.mobile }}
+          github-token: ${{ github.token }}
+
+      - name: Set up JDK 21 (Temurin)
+        if: steps.runs.outputs.ready == 'true'
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Set up Node (Allure 3 report CLI)
+        if: steps.runs.outputs.ready == 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+
+      - name: Generate the combined Allure report
+        if: steps.runs.outputs.ready == 'true'
+        run: ./mvnw -B -ntp -N exec:exec@allure-report
+
+      - name: Configure GitHub Pages
+        if: steps.runs.outputs.ready == 'true'
+        uses: actions/configure-pages@v6
+
+      - name: Upload report as Pages artifact
+        if: steps.runs.outputs.ready == 'true'
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: allure-report
+
+      - name: Deploy to GitHub Pages
+        if: steps.runs.outputs.ready == 'true'
+        id: deploy
+        uses: actions/deploy-pages@v5
