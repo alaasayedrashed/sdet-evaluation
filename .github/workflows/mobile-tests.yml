@@ -89,7 +89,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: mobile-diagnostics-aosp_atd
+          name: mobile-diagnostics
           path: |
             mobile-tests/target/appium.log
             mobile-tests/target/logs
