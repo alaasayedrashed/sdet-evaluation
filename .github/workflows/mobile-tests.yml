@@ -114,15 +114,15 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
-      - name: Generate Allure HTML report
+      - name: Generate Allure report (single file)
         if: always()
-        run: ./mvnw -B -ntp -N allure:report
+        run: ./mvnw -B -ntp -N allure:report -Dallure.single.file=true
 
-      - name: Upload Allure HTML report
+      - name: Upload Allure report (open index.html)
         if: always()
         uses: actions/upload-artifact@v7
         with:
           name: allure-report-mobile
-          path: allure-report
+          path: allure-report/index.html
           if-no-files-found: warn
           retention-days: 14

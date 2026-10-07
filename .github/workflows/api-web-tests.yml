@@ -17,36 +17,26 @@ jobs:
     name: API (REST Assured) + Web (Playwright)
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    # Official Playwright Java image (same as the Dockerfile): JDK, Maven and browsers preinstalled,
+    # so there is no browser or OS-package install step
+    container:
+      image: mcr.microsoft.com/playwright/java:v1.63.0-noble
+    env:
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
 
     steps:
       - name: Check out
         uses: actions/checkout@v7
 
-      - name: Set up JDK 21 (Temurin)
-        uses: actions/setup-java@v6
-        with:
-          distribution: temurin
-          java-version: "21"
-          cache: maven
-
-
-      - name: Build framework (no tests)
-        run: ./mvnw -B -ntp install -DskipTests -pl api-tests,web-tests -am
-
-      - name: Cache Playwright browsers
+      - name: Cache Maven repository
         uses: actions/cache@v6
         with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('pom.xml') }}
-
-      - name: Install Chromium and its OS dependencies
-        run: ./mvnw -B -ntp -pl web-tests exec:java -Dexec.args="install --with-deps chromium"
+          path: /github/home/.m2/repository
+          key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
+          restore-keys: maven-${{ runner.os }}-
 
       - name: Run API and Web tests (headless)
-        env:
-          # Browsers were installed above; skip Playwright's automatic download of all browsers
-          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
-        run: ./mvnw -B -ntp test -pl api-tests,web-tests -Dweb.headless=true
+        run: ./mvnw -B -ntp test -pl api-tests,web-tests -am -Dweb.headless=true
 
       - name: Upload Allure results
         if: always()
@@ -68,15 +58,15 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
-      - name: Generate Allure HTML report
+      - name: Generate Allure report (single file)
         if: always()
-        run: ./mvnw -B -ntp -N allure:report
+        run: ./mvnw -B -ntp -N allure:report -Dallure.single.file=true
 
-      - name: Upload Allure HTML report
+      - name: Upload Allure report (open index.html)
         if: always()
         uses: actions/upload-artifact@v7
         with:
           name: allure-report-api-web
-          path: allure-report
+          path: allure-report/index.html
           if-no-files-found: warn
           retention-days: 14

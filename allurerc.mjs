@@ -26,7 +26,6 @@ export default {
 
   // Shown on the report overview.
   variables: {
-    "Java": "21 (Temurin)",
     "Test stack": "Cucumber 7 + TestNG",
     "Branch": env.GITHUB_REF_NAME ?? "local",
     "Commit": env.GITHUB_SHA?.slice(0, 7) ?? "local",

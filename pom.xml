@@ -72,6 +72,7 @@
         <allure-maven.version>3.1.0</allure-maven.version>
         <!-- Allure 3 report generator used by allure-maven (renders Allure 3 HTTP-exchange attachments) -->
         <allure.report.version>3.20.1</allure.report.version>
+        <allure.single.file>false</allure.single.file>
     </properties>
 
     <dependencyManagement>
@@ -363,6 +364,8 @@
                     <resultsDirectory>${allure.results.directory}</resultsDirectory>
                     <reportDirectory>${allure.report.directory}</reportDirectory>
                     <configPath>${maven.multiModuleProjectDirectory}/allurerc.mjs</configPath>
+                    <!-- CI sets -Dallure.single.file=true: one index.html that opens with a double-click -->
+                    <singleFile>${allure.single.file}</singleFile>
                 </configuration>
             </plugin>
             <plugin>
