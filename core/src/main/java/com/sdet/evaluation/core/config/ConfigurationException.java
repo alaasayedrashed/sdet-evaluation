@@ -6,6 +6,8 @@ package com.sdet.evaluation.core.config;
  */
 public class ConfigurationException extends RuntimeException {
 
+    private static final long serialVersionUID = 1L;
+
     public ConfigurationException(String message) {
         super(message);
     }

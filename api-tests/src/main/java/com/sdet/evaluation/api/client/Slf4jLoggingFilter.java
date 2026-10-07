@@ -22,8 +22,9 @@ public class Slf4jLoggingFilter implements Filter {
                            FilterableResponseSpecification responseSpec,
                            FilterContext context) {
         LOG.info("--> {} {}", request.getMethod(), request.getURI());
-        if (request.getBody() != null) {
-            LOG.debug("Request body: {}", (Object) request.getBody());
+        Object body = request.getBody();
+        if (body != null) {
+            LOG.debug("Request body: {}", body);
         }
 
         Response response = context.next(request, responseSpec);

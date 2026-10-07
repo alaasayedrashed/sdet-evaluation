@@ -20,6 +20,7 @@ APPIUM_PID=$!
 # Always stop Appium when this script exits. A running Appium keeps adb connections (logcat,
 # UiAutomator2 port forwarding) open to the emulator, which makes the runner's "Terminate
 # Emulator" phase hang after the tests have finished.
+# shellcheck disable=SC2329 # invoked by the EXIT trap below
 stop_appium() {
   kill "$APPIUM_PID" 2>/dev/null && wait "$APPIUM_PID" 2>/dev/null
   echo "Appium server stopped"

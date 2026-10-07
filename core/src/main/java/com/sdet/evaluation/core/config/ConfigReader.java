@@ -50,11 +50,13 @@ public final class ConfigReader {
      */
     public static ConfigReader fromClasspath(String resourcePath) {
         var properties = new Properties();
-        try (InputStream stream = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourcePath)) {
-            if (stream == null) {
-                throw new ConfigurationException("Configuration file not found on classpath: " + resourcePath);
-            }
-            properties.load(new InputStreamReader(stream, StandardCharsets.UTF_8));
+        InputStream stream = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourcePath);
+        if (stream == null) {
+            throw new ConfigurationException("Configuration file not found on classpath: " + resourcePath);
+        }
+        // Closing the reader also closes the stream
+        try (var reader = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
+            properties.load(reader);
         } catch (IOException e) {
             throw new ConfigurationException("Unable to read configuration file: " + resourcePath, e);
         }
