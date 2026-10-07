@@ -26,3 +26,9 @@ traces/
 # OS
 .DS_Store
 Thumbs.db
+
+# Node tooling (Allure CLI runs via npx)
+node_modules/
+
+# IDE assistant tooling (not part of the project)
+.github/modernize/
