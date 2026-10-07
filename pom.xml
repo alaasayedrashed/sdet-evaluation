@@ -18,6 +18,7 @@
     <modules>
         <module>core</module>
         <module>api-tests</module>
+        <module>web-tests</module>
     </modules>
 
     <properties>
