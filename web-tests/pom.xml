@@ -58,21 +58,4 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <!--
-                    Runs the Playwright CLI, e.g. to install browsers and OS dependencies in CI
-                    (see .github/workflows/api-web-tests.yml)
-                -->
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <configuration>
-                    <mainClass>com.microsoft.playwright.CLI</mainClass>
-                    <classpathScope>compile</classpathScope>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 </project>
