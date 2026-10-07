@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "create-user-schema.json",
+  "title": "POST /api/users response",
+  "description": "Contract for a created user. Additional properties (e.g. reqres '_meta') are allowed so the contract only pins what consumers rely on.",
+  "type": "object",
+  "required": ["name", "job", "id", "createdAt"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "job": {
+      "type": "string",
+      "minLength": 1
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": true
+}
