@@ -1,0 +1,125 @@
+name: Mobile Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # Same versions as the local setup documented in the README
+  APPIUM_VERSION: "3.8.0"
+  UIAUTOMATOR2_DRIVER_VERSION: "8.7.0"
+  # API 30 (Android 11): the app targets SDK 10, which newer images refuse to install
+  ANDROID_API_LEVEL: "30"
+
+jobs:
+  mobile:
+    name: Mobile (Appium + Android emulator)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Enable KVM (hardware acceleration for the emulator)
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Set up JDK 21 (Temurin)
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Set up Node (Appium + Allure 3 report CLI)
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+
+      - name: Install Appium server and UiAutomator2 driver
+        run: |
+          npm install --global "appium@${APPIUM_VERSION}"
+          appium driver install "uiautomator2@${UIAUTOMATOR2_DRIVER_VERSION}"
+          appium --version
+          appium driver list --installed
+
+      - name: Build framework (no tests)
+        run: ./mvnw -B -ntp install -DskipTests -pl mobile-tests -am
+
+      - name: Cache AVD snapshot
+        uses: actions/cache@v6
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-${{ env.ANDROID_API_LEVEL }}-google_apis-x86_64
+
+      - name: Create AVD snapshot for caching
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ env.ANDROID_API_LEVEL }}
+          target: google_apis
+          arch: x86_64
+          profile: pixel_5
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "Generated AVD snapshot for caching."
+
+      - name: Run mobile tests on the emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ env.ANDROID_API_LEVEL }}
+          target: google_apis
+          arch: x86_64
+          profile: pixel_5
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: bash .github/scripts/run-mobile-tests.sh
+
+      - name: Upload Allure results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: allure-results-mobile
+          path: allure-results
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload Appium and framework logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: mobile-diagnostics
+          path: |
+            mobile-tests/target/appium.log
+            mobile-tests/target/logs
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Generate Allure HTML report
+        if: always()
+        run: ./mvnw -B -ntp -N exec:exec@allure-report
+
+      - name: Upload Allure HTML report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: allure-report-mobile
+          path: allure-report
+          if-no-files-found: warn
+          retention-days: 14
