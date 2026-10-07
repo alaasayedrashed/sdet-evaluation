@@ -1,0 +1,2 @@
+# Run `sdk env install` to use the same JDK as CI (Temurin 21 LTS)
+java=21.0.12+1.1-tem

@@ -1,0 +1,28 @@
+# Build output
+target/
+
+# Test reporting (generated; published by CI instead)
+allure-results/
+allure-report/
+.allure/
+
+# Logs and runtime artifacts
+*.log
+logs/
+screenshots/
+traces/
+
+# Maven wrapper: only-script distribution, no jar needed
+.mvn/wrapper/maven-wrapper.jar
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
