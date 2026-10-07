@@ -12,17 +12,15 @@ import io.cucumber.testng.CucumberOptions;
  * over the {@code tags} declared here.
  */
 @CucumberOptions(
-        features = "classpath:features",
-        glue = "com.sdet.evaluation.mobile",
-        tags = "@mobile and not @negative",
-        plugin = {
-                "pretty",
-                "summary",
-                "io.qameta.allure.cucumber7jvm.AllureCucumber7Jvm",
-                "html:target/cucumber-reports/mobile.html",
-                "json:target/cucumber-reports/mobile.json"
-        },
-        monochrome = true
-)
-public class MobileTestRunner extends AbstractTestNGCucumberTests {
-}
+    features = "classpath:features",
+    glue = "com.sdet.evaluation.mobile",
+    tags = "@mobile and not @negative",
+    plugin = {
+      "pretty",
+      "summary",
+      "io.qameta.allure.cucumber7jvm.AllureCucumber7Jvm",
+      "html:target/cucumber-reports/mobile.html",
+      "json:target/cucumber-reports/mobile.json"
+    },
+    monochrome = true)
+public class MobileTestRunner extends AbstractTestNGCucumberTests {}

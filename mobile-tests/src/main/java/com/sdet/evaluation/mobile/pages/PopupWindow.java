@@ -10,20 +10,22 @@ import org.openqa.selenium.By;
  */
 public class PopupWindow extends BasePage {
 
-    private static final By DISMISS = appId("popup_dismiss_button");
+  private static final By DISMISS = appId("popup_dismiss_button");
 
-    /** {@code true} if the popup's Dismiss button is visible. */
-    public boolean isDisplayed() {
-        return isVisible(DISMISS);
-    }
+  /** {@code true} if the popup's Dismiss button is visible. */
+  public boolean isDisplayed() {
+    return isVisible(DISMISS);
+  }
 
-    @Step("Tap \"Dismiss\" on the popup")
-    public void dismiss() {
-        tap(DISMISS);
-    }
+  @Step("Tap \"Dismiss\" on the popup")
+  public void dismiss() {
+    tap(DISMISS);
+  }
 
-    /** Waits until the popup is gone; returns {@code false} if it is still shown after the timeout. */
-    public boolean waitUntilClosed() {
-        return waitUntilGone(DISMISS, MobileConfig.explicitTimeout());
-    }
+  /**
+   * Waits until the popup is gone; returns {@code false} if it is still shown after the timeout.
+   */
+  public boolean waitUntilClosed() {
+    return waitUntilGone(DISMISS, MobileConfig.explicitTimeout());
+  }
 }

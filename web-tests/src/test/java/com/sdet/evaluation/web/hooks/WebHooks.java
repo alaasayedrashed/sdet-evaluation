@@ -15,70 +15,82 @@ import org.slf4j.LoggerFactory;
  * Browser lifecycle and failure evidence for web scenarios.
  *
  * <ul>
- *     <li>{@code @Before}: start a fresh browser/context/page (with tracing if enabled)</li>
- *     <li>{@code @AfterStep}: screenshot after every step of scenarios tagged {@code @screenshots}</li>
- *     <li>{@code @After}: always a final screenshot; on failure also URL, page HTML and the
- *         Playwright trace; then close the browser no matter what happened</li>
+ *   <li>{@code @Before}: start a fresh browser/context/page (with tracing if enabled)
+ *   <li>{@code @AfterStep}: screenshot after every step of scenarios tagged {@code @screenshots}
+ *   <li>{@code @After}: always a final screenshot; on failure also URL, page HTML and the
+ *       Playwright trace; then close the browser no matter what happened
  * </ul>
  */
 public class WebHooks {
 
-    private static final Logger LOG = LoggerFactory.getLogger(WebHooks.class);
+  private static final Logger LOG = LoggerFactory.getLogger(WebHooks.class);
 
-    @Before
-    public void startBrowser(Scenario scenario) {
-        LOG.info("=== START: {} {}", scenario.getName(), scenario.getSourceTagNames());
-        PlaywrightFactory.start();
+  @Before
+  public void startBrowser(Scenario scenario) {
+    LOG.info("=== START: {} {}", scenario.getName(), scenario.getSourceTagNames());
+    PlaywrightFactory.start();
+  }
+
+  /** Screenshot after every step, only for scenarios tagged {@code @screenshots} (key flows). */
+  @AfterStep("@screenshots")
+  public void screenshotAfterStep() {
+    if (PlaywrightFactory.isStarted()) {
+      attachScreenshot("Step screenshot");
     }
+  }
 
-    /** Screenshot after every step, only for scenarios tagged {@code @screenshots} (key flows). */
-    @AfterStep("@screenshots")
-    public void screenshotAfterStep() {
-        if (PlaywrightFactory.isStarted()) {
-            attachScreenshot("Step screenshot");
+  @After
+  public void collectEvidenceAndCloseBrowser(Scenario scenario) {
+    try {
+      if (PlaywrightFactory.isStarted()) {
+        boolean failed = scenario.isFailed();
+        attachScreenshot(failed ? "Failure screenshot" : "Final screenshot");
+        if (failed) {
+          attachPageDetails();
         }
+        PlaywrightFactory.stopTracing(failed, traceFileName(scenario))
+            .ifPresent(
+                trace ->
+                    AllureUtils.attachFile(
+                        "Playwright trace (open at trace.playwright.dev)",
+                        trace,
+                        "application/zip",
+                        "zip"));
+      }
+    } finally {
+      PlaywrightFactory.stop();
+      LOG.info("=== END ({}): {}", scenario.getStatus(), scenario.getName());
     }
+  }
 
-    @After
-    public void collectEvidenceAndCloseBrowser(Scenario scenario) {
-        try {
-            if (PlaywrightFactory.isStarted()) {
-                boolean failed = scenario.isFailed();
-                attachScreenshot(failed ? "Failure screenshot" : "Final screenshot");
-                if (failed) {
-                    attachPageDetails();
-                }
-                PlaywrightFactory.stopTracing(failed, traceFileName(scenario))
-                        .ifPresent(trace -> AllureUtils.attachFile("Playwright trace (open at trace.playwright.dev)",
-                                trace, "application/zip", "zip"));
-            }
-        } finally {
-            PlaywrightFactory.stop();
-            LOG.info("=== END ({}): {}", scenario.getStatus(), scenario.getName());
-        }
+  private void attachScreenshot(String name) {
+    try {
+      AllureUtils.attachScreenshot(
+          name,
+          PlaywrightFactory.page()
+              .screenshot(
+                  new Page.ScreenshotOptions()
+                      .setFullPage(true)
+                      .setTimeout(WebConfig.screenshotTimeout().toMillis())));
+    } catch (RuntimeException e) {
+      LOG.warn("Could not capture screenshot '{}': {}", name, e.getMessage());
     }
+  }
 
-    private void attachScreenshot(String name) {
-        try {
-            AllureUtils.attachScreenshot(name, PlaywrightFactory.page().screenshot(new Page.ScreenshotOptions()
-                    .setFullPage(true)
-                    .setTimeout(WebConfig.screenshotTimeout().toMillis())));
-        } catch (RuntimeException e) {
-            LOG.warn("Could not capture screenshot '{}': {}", name, e.getMessage());
-        }
+  private void attachPageDetails() {
+    try {
+      Page page = PlaywrightFactory.page();
+      AllureUtils.attachText("Page URL", page.url());
+      AllureUtils.attachHtml("Page HTML", page.content());
+    } catch (RuntimeException e) {
+      LOG.warn("Could not capture page details: {}", e.getMessage());
     }
+  }
 
-    private void attachPageDetails() {
-        try {
-            Page page = PlaywrightFactory.page();
-            AllureUtils.attachText("Page URL", page.url());
-            AllureUtils.attachHtml("Page HTML", page.content());
-        } catch (RuntimeException e) {
-            LOG.warn("Could not capture page details: {}", e.getMessage());
-        }
-    }
-
-    private static String traceFileName(Scenario scenario) {
-        return scenario.getName().replaceAll("[^A-Za-z0-9]+", "_") + "_" + System.currentTimeMillis() + ".zip";
-    }
+  private static String traceFileName(Scenario scenario) {
+    return scenario.getName().replaceAll("[^A-Za-z0-9]+", "_")
+        + "_"
+        + System.currentTimeMillis()
+        + ".zip";
+  }
 }

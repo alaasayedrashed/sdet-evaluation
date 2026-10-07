@@ -12,8 +12,8 @@ import lombok.Builder;
 @Builder
 public record CreateUserRequest(String name, String job) {
 
-    /** Builds a request from an existing user (API chaining): {@code name = "<first> <last>"}. */
-    public static CreateUserRequest fromUser(User user, String job) {
-        return builder().name(user.fullName()).job(job).build();
-    }
+  /** Builds a request from an existing user (API chaining): {@code name = "<first> <last>"}. */
+  public static CreateUserRequest fromUser(User user, String job) {
+    return builder().name(user.fullName()).job(job).build();
+  }
 }

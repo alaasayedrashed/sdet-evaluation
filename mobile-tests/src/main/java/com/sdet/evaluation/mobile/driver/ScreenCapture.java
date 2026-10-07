@@ -12,24 +12,23 @@ import org.openqa.selenium.OutputType;
  */
 public final class ScreenCapture {
 
-    private static final String NATIVE_CONTEXT = "NATIVE_APP";
+  private static final String NATIVE_CONTEXT = "NATIVE_APP";
 
-    private ScreenCapture() {
-    }
+  private ScreenCapture() {}
 
-    /** PNG screenshot of the whole device screen. */
-    public static byte[] png(AndroidDriver driver) {
-        String original = driver.getContext();
-        boolean switched = original != null && !NATIVE_CONTEXT.equals(original);
-        if (switched) {
-            driver.context(NATIVE_CONTEXT);
-        }
-        try {
-            return driver.getScreenshotAs(OutputType.BYTES);
-        } finally {
-            if (switched) {
-                driver.context(original);
-            }
-        }
+  /** PNG screenshot of the whole device screen. */
+  public static byte[] png(AndroidDriver driver) {
+    String original = driver.getContext();
+    boolean switched = original != null && !NATIVE_CONTEXT.equals(original);
+    if (switched) {
+      driver.context(NATIVE_CONTEXT);
     }
+    try {
+      return driver.getScreenshotAs(OutputType.BYTES);
+    } finally {
+      if (switched) {
+        driver.context(original);
+      }
+    }
+  }
 }

@@ -9,28 +9,29 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Routes request/response logging through SLF4J (instead of REST Assured's default
- * {@code System.out}) so HTTP traffic lands in the same log file as everything else.
- * Summaries go to INFO, bodies to DEBUG.
+ * Routes request/response logging through SLF4J (instead of REST Assured's default {@code
+ * System.out}) so HTTP traffic lands in the same log file as everything else. Summaries go to INFO,
+ * bodies to DEBUG.
  */
 public class Slf4jLoggingFilter implements Filter {
 
-    private static final Logger LOG = LoggerFactory.getLogger(Slf4jLoggingFilter.class);
+  private static final Logger LOG = LoggerFactory.getLogger(Slf4jLoggingFilter.class);
 
-    @Override
-    public Response filter(FilterableRequestSpecification request,
-                           FilterableResponseSpecification responseSpec,
-                           FilterContext context) {
-        LOG.info("--> {} {}", request.getMethod(), request.getURI());
-        Object body = request.getBody();
-        if (body != null) {
-            LOG.debug("Request body: {}", body);
-        }
-
-        Response response = context.next(request, responseSpec);
-
-        LOG.info("<-- {} {} ({} ms)", response.getStatusCode(), request.getURI(), response.getTime());
-        LOG.debug("Response body: {}", response.getBody().asString());
-        return response;
+  @Override
+  public Response filter(
+      FilterableRequestSpecification request,
+      FilterableResponseSpecification responseSpec,
+      FilterContext context) {
+    LOG.info("--> {} {}", request.getMethod(), request.getURI());
+    Object body = request.getBody();
+    if (body != null) {
+      LOG.debug("Request body: {}", body);
     }
+
+    Response response = context.next(request, responseSpec);
+
+    LOG.info("<-- {} {} ({} ms)", response.getStatusCode(), request.getURI(), response.getTime());
+    LOG.debug("Response body: {}", response.getBody().asString());
+    return response;
+  }
 }
