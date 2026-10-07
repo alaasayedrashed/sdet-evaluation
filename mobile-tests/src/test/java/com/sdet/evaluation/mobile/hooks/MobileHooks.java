@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
  *     <li>{@code @After}: final screenshot; on failure also app state, page source and logcat.
  *         Every capture is isolated in its own try/catch because, after a crash, any of them
  *         may fail - and evidence collection must never break the rest of the suite</li>
- *     <li>{@code @AfterAll}: end the Appium session</li>
+ *     <li>{@code @AfterAll}: close the app and end the Appium session</li>
  * </ul>
  */
 public class MobileHooks {

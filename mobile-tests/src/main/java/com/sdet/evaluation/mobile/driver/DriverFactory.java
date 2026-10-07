@@ -65,12 +65,20 @@ public final class DriverFactory {
         return DRIVER.get() != null;
     }
 
-    /** Ends the thread's session (if any), ignoring errors from an already-dead session. */
+    /**
+     * Closes the app under test and ends the thread's session (if any), so nothing is left running
+     * on the device. Errors from an already-dead session are ignored.
+     */
     public static void quit() {
         AndroidDriver driver = DRIVER.get();
         DRIVER.remove();
         if (driver == null) {
             return;
+        }
+        try {
+            driver.terminateApp(MobileConfig.appPackage());
+        } catch (WebDriverException e) {
+            LOG.warn("Could not close the app before ending the session: {}", e.getMessage());
         }
         try {
             driver.quit();
