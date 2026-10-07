@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
  *
  * <ul>
  *     <li>{@code @Before}: start a fresh browser/context/page (with tracing if enabled)</li>
- *     <li>{@code @AfterStep}: optional screenshot after every step ({@code web.screenshot.each.step})</li>
+ *     <li>{@code @AfterStep}: screenshot after every step of scenarios tagged {@code @screenshots}</li>
  *     <li>{@code @After}: always a final screenshot; on failure also URL, page HTML and the
  *         Playwright trace; then close the browser no matter what happened</li>
  * </ul>
@@ -31,9 +31,10 @@ public class WebHooks {
         PlaywrightFactory.start();
     }
 
-    @AfterStep
+    /** Screenshot after every step, only for scenarios tagged {@code @screenshots} (key flows). */
+    @AfterStep("@screenshots")
     public void screenshotAfterStep() {
-        if (WebConfig.screenshotEachStep() && PlaywrightFactory.isStarted()) {
+        if (PlaywrightFactory.isStarted()) {
             attachScreenshot("Step screenshot");
         }
     }

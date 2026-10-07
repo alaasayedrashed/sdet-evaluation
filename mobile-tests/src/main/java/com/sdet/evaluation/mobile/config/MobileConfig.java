@@ -95,10 +95,6 @@ public final class MobileConfig {
         return CONFIG.getDuration("mobile.timeout.adb.exec");
     }
 
-    public static boolean screenshotEachStep() {
-        return CONFIG.getBoolean("mobile.screenshot.each.step");
-    }
-
     public static int logcatLines() {
         return CONFIG.getInt("mobile.logcat.lines");
     }

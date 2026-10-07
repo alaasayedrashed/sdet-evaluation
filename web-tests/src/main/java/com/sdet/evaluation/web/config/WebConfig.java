@@ -60,10 +60,6 @@ public final class WebConfig {
         return CONFIG.getInt("web.drag.steps");
     }
 
-    public static boolean screenshotEachStep() {
-        return CONFIG.getBoolean("web.screenshot.each.step");
-    }
-
     public static boolean traceOnFailure() {
         return CONFIG.getBoolean("web.trace.on.failure");
     }

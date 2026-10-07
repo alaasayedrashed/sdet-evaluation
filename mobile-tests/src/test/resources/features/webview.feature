@@ -6,7 +6,7 @@ Feature: Hybrid web view screen
   Background:
     Given the app is launched on the home screen
 
-  @mobile_sc3
+  @mobile_sc3 @screenshots
   Scenario: Send a name and preferred car through the web view
     When I tap the Chrome logo
     Then the screen title should be "selendroid-test-app"

@@ -4,7 +4,7 @@ Feature: User registration
   Background:
     Given the app is launched on the home screen
 
-  @smoke @mobile_sc4
+  @smoke @mobile_sc4 @screenshots
   Scenario: Register a new user and confirm the details
     When I tap the File logo
     Then the screen title should be "selendroid-test-app"

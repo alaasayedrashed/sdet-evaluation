@@ -7,7 +7,7 @@ Feature: jQuery UI Interactions demos
   Background:
     Given I am on the jQuery UI home page
 
-  @smoke @web_case1
+  @smoke @web_case1 @screenshots
   Scenario: Drop the draggable box onto the target
     Given I open the "Droppable" demo from the "Interactions" section of the sidebar
     When I drag the draggable box onto the drop target
@@ -32,7 +32,7 @@ Feature: jQuery UI Interactions demos
     When I resize the box by dragging its bottom-right handle by 120 x 80 pixels
     Then the box should have grown by about 120 x 80 pixels within 5 pixels tolerance
 
-  @web_case6
+  @web_case6 @screenshots
   Scenario: Reorder the sortable list from ascending to descending
     Given I open the "Sortable" demo from the "Interactions" section of the sidebar
     And the sortable items should be in this order:
