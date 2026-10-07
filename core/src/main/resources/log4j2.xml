@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Shared logging configuration for every module (shipped once in core instead of being copied).
+    Surefire sets:
+      module.name - artifactId, used as the log file name
+      log.dir     - <module>/target/logs
+    Console shows INFO; the file keeps DEBUG for the framework packages.
+-->
+<Configuration status="WARN">
+    <Properties>
+        <Property name="logDir">${sys:log.dir:-target/logs}</Property>
+        <Property name="moduleName">${sys:module.name:-tests}</Property>
+        <Property name="pattern">%d{HH:mm:ss.SSS} %-5level [%t] %logger{1.} - %msg%n%throwable</Property>
+    </Properties>
+
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="${pattern}"/>
+            <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+        </Console>
+        <File name="File" fileName="${logDir}/${moduleName}.log" append="false">
+            <PatternLayout pattern="${pattern}"/>
+        </File>
+    </Appenders>
+
+    <Loggers>
+        <Logger name="com.sdet.evaluation" level="DEBUG" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="File"/>
+        </Logger>
+        <!-- Third-party libraries are noisy at DEBUG -->
+        <Logger name="io.netty" level="WARN"/>
+        <Logger name="org.apache.http" level="WARN"/>
+        <Logger name="org.openqa.selenium" level="WARN"/>
+        <Logger name="io.appium" level="INFO"/>
+        <Root level="INFO">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="File"/>
+        </Root>
+    </Loggers>
+</Configuration>
