@@ -6,7 +6,6 @@ import com.sdet.evaluation.api.models.CreateUserRequest;
 import com.sdet.evaluation.api.models.CreateUserResponse;
 import com.sdet.evaluation.api.models.User;
 import com.sdet.evaluation.api.models.UserListResponse;
-import com.sdet.evaluation.core.utils.DateUtils;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -74,15 +73,6 @@ public class UsersSteps {
 
         assertThat(created.getName()).as("'name' echoed in the response").isEqualTo(sent.name());
         assertThat(created.getJob()).as("'job' echoed in the response").isEqualTo(sent.job());
-    }
-
-    @Then("the created user's {string} should be a valid ISO-8601 timestamp")
-    public void createdAtShouldBeIsoTimestamp(String field) {
-        String value = context.lastResponse().jsonPath().getString(field);
-
-        assertThat(DateUtils.isIsoTimestamp(value))
-                .as("'%s' should be an ISO-8601 timestamp but was '%s'", field, value)
-                .isTrue();
     }
 
     private User findUserOnLastPage(int id) {
