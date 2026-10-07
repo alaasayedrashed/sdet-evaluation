@@ -22,7 +22,7 @@ env:
 jobs:
   mobile:
     name: Mobile (Appium + Android emulator)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
 
     steps:
