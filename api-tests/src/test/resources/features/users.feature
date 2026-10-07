@@ -23,7 +23,7 @@ Feature: Users API (reqres.in)
   @smoke @api_case2
   Scenario: Create a user from an existing user's data (API chaining)
     Given I have retrieved the user with id 10 from page 2
-    When I create a new user from that user with job "QA Automation Engineer"
+    When I create a new user from that user with job "BA"
     Then the response status code should be 201
     And the created user should have a non-empty id
     And the created user should echo the submitted name and job
