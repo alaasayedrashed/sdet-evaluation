@@ -1,0 +1,86 @@
+name: API & Web Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  api-web:
+    name: API (REST Assured) + Web (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Set up JDK 21 (Temurin)
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Set up Node (Allure 3 report CLI)
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+
+      - name: Build framework (no tests)
+        run: ./mvnw -B -ntp install -DskipTests -pl api-tests,web-tests -am
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pom.xml') }}
+
+      - name: Install Chromium and its OS dependencies
+        run: ./mvnw -B -ntp -pl web-tests exec:java -Dexec.args="install --with-deps chromium"
+
+      - name: Run API and Web tests (headless)
+        env:
+          # Browsers were installed above; skip Playwright's automatic download of all browsers
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+        run: ./mvnw -B -ntp test -pl api-tests,web-tests -Dweb.headless=true
+
+      - name: Upload Allure results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: allure-results-api-web
+          path: allure-results
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload Playwright traces and logs
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: web-api-diagnostics
+          path: |
+            web-tests/target/playwright/traces
+            */target/logs
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Generate Allure HTML report
+        if: always()
+        run: ./mvnw -B -ntp -N exec:exec@allure-report
+
+      - name: Upload Allure HTML report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: allure-report-api-web
+          path: allure-report
+          if-no-files-found: warn
+          retention-days: 14
