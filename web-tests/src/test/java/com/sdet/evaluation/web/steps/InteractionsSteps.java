@@ -46,6 +46,11 @@ public class InteractionsSteps {
         assertThat(droppablePage.dropTargetText()).as("drop target text after the drop").isEqualTo(expectedText);
     }
 
+    @Then("the draggable box should be inside the drop target")
+    public void draggableShouldBeInsideTarget() {
+        assertThat(droppablePage.isDraggableInsideTarget()).as("draggable box lies within the drop target").isTrue();
+    }
+
     @Then("the drop target should have the {string} class")
     public void dropTargetShouldHaveClass(String cssClass) {
         assertThat(droppablePage.dropTargetHasClass(cssClass))

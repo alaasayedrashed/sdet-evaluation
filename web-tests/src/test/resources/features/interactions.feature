@@ -11,7 +11,8 @@ Feature: jQuery UI Interactions demos
   Scenario: Drop the draggable box onto the target
     Given I open the "Droppable" demo from the "Interactions" section of the sidebar
     When I drag the draggable box onto the drop target
-    Then the drop target should display "Dropped!"
+    Then the draggable box should be inside the drop target
+    And the drop target should display "Dropped!"
     And the drop target should have the "ui-state-highlight" class
 
   @web_case2
