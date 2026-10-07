@@ -30,6 +30,9 @@
         <required.java.version>[21,)</required.java.version>
         <required.maven.version>[3.9,)</required.maven.version>
 
+        <!-- Parallel scenario threads for the web and API runners (override with -Dthreads=N) -->
+        <threads>4</threads>
+
         <!-- ===== Reporting: one combined results folder at the repository root ===== -->
         <allure.results.directory>${maven.multiModuleProjectDirectory}/allure-results</allure.results.directory>
         <allure.report.directory>${maven.multiModuleProjectDirectory}/allure-report</allure.report.directory>
@@ -262,6 +265,8 @@
                             <allure.results.directory>${allure.results.directory}</allure.results.directory>
                             <module.name>${project.artifactId}</module.name>
                             <log.dir>${project.build.directory}/logs</log.dir>
+                            <!-- Size of the pool running scenarios in parallel (runners use a parallel data provider) -->
+                            <testng.dataProviderThreadCount>${threads}</testng.dataProviderThreadCount>
                         </systemPropertyVariables>
                     </configuration>
                 </plugin>
