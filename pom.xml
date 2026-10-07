@@ -253,9 +253,8 @@
                             ${org.aspectj:aspectjweaver:jar} is resolved by dependency:properties (see below).
                             Quoted because the local repository path may contain spaces.
                         -->
-                        <!-- Unit tests (*Test) and Cucumber runners (*Runner) -->
+                        <!-- The Cucumber runners are the only test entry points -->
                         <includes>
-                            <include>**/*Test.java</include>
                             <include>**/*Runner.java</include>
                         </includes>
                         <argLine>-javaagent:"${org.aspectj:aspectjweaver:jar}" -Dfile.encoding=UTF-8</argLine>

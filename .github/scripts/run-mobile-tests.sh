@@ -32,13 +32,12 @@ echo
 echo "::endgroup::"
 
 echo "::group::Regular mobile scenarios (must pass)"
-# One retry absorbs emulator hiccups on shared CI runners (see RetryAnalyzer)
-./mvnw -B -ntp test -pl mobile-tests -Dretry.count=1
+./mvnw -B -ntp test -pl mobile-tests
 regular=$?
 echo "::endgroup::"
 
 echo "::group::Intentional-failure scenarios (@negative, expected to fail)"
-./mvnw -B -ntp test -pl mobile-tests -Dcucumber.filter.tags="@negative" -Dretry.count=0
+./mvnw -B -ntp test -pl mobile-tests -Dcucumber.filter.tags="@negative"
 negative=$?
 echo "::endgroup::"
 
