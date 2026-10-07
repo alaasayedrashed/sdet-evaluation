@@ -32,3 +32,6 @@ node_modules/
 
 # IDE assistant tooling (not part of the project)
 .github/modernize/
+
+# Local environment overrides for docker compose (see .env.example)
+.env

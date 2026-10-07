@@ -1,0 +1,16 @@
+# One-command web + API run without installing Java, Maven or browsers:
+#   docker compose run --rm web-api
+# Results are written to ./allure-results on the host; build the report with ./mvnw -N allure:report
+services:
+  web-api:
+    build: .
+    image: sdet-evaluation/web-api
+    volumes:
+      - .:/workspace
+      - maven-repo:/root/.m2   # dependency cache, so repeat runs are fast
+    env_file:
+      - path: .env             # optional, e.g. API_KEY=... (see .env.example)
+        required: false
+
+volumes:
+  maven-repo:
