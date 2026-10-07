@@ -36,7 +36,7 @@ jobs:
           restore-keys: maven-${{ runner.os }}-
 
       - name: Run API and Web tests (headless)
-        run: ./mvnw -B -ntp test -pl api-tests,web-tests -am -Dweb.headless=true
+        run: ./mvnw -B -ntp -fae test -pl api-tests,web-tests -am -Dweb.headless=true
 
       - name: Upload Allure results
         if: always()

@@ -8,4 +8,5 @@ WORKDIR /workspace
 # Browsers ship with the image; skip Playwright's download at test time
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 
-CMD ["sh", "./mvnw", "-B", "-ntp", "test", "-pl", "api-tests,web-tests", "-am"]
+# -fae: if one module fails (e.g. reqres.in rate limit), still run the other
+CMD ["sh", "./mvnw", "-B", "-ntp", "-fae", "test", "-pl", "api-tests,web-tests", "-am"]
