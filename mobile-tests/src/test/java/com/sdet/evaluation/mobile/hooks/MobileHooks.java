@@ -4,13 +4,13 @@ import com.sdet.evaluation.core.reporting.AllureUtils;
 import com.sdet.evaluation.mobile.config.MobileConfig;
 import com.sdet.evaluation.mobile.driver.AppLauncher;
 import com.sdet.evaluation.mobile.driver.DriverFactory;
+import com.sdet.evaluation.mobile.driver.ScreenCapture;
 import io.appium.java_client.android.AndroidDriver;
 import io.cucumber.java.After;
 import io.cucumber.java.AfterAll;
 import io.cucumber.java.AfterStep;
 import io.cucumber.java.Before;
 import io.cucumber.java.Scenario;
-import org.openqa.selenium.OutputType;
 import org.openqa.selenium.logging.LogEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  * <ul>
  *     <li>{@code @Before}: reuse (or recreate) the Appium session and relaunch the app, so every
  *         scenario starts on the home screen - even right after a crash</li>
- *     <li>{@code @AfterStep}: optional screenshot after every step ({@code mobile.screenshot.each.step})</li>
+ *     <li>{@code @AfterStep}: screenshot after every step of scenarios tagged {@code @screenshots}</li>
  *     <li>{@code @After}: final screenshot; on failure also app state, page source and logcat.
  *         Every capture is isolated in its own try/catch because, after a crash, any of them
  *         may fail - and evidence collection must never break the rest of the suite</li>
@@ -41,11 +41,10 @@ public class MobileHooks {
         AppLauncher.restartApp();
     }
 
-    @AfterStep
+    /** Screenshot after every step, only for scenarios tagged {@code @screenshots} (key flows). */
+    @AfterStep("@screenshots")
     public void screenshotAfterStep() {
-        if (MobileConfig.screenshotEachStep()) {
-            attachScreenshot("Step screenshot");
-        }
+        attachScreenshot("Step screenshot");
     }
 
     @After
@@ -68,7 +67,7 @@ public class MobileHooks {
 
     private void attachScreenshot(String name) {
         try {
-            AllureUtils.attachScreenshot(name, DriverFactory.driver().getScreenshotAs(OutputType.BYTES));
+            AllureUtils.attachScreenshot(name, ScreenCapture.png(DriverFactory.driver()));
         } catch (RuntimeException e) {
             LOG.warn("Could not capture screenshot '{}' (session may be unstable after a crash): {}", name, e.getMessage());
         }
