@@ -5,25 +5,24 @@ Feature: jQuery UI Widgets demos
   Background:
     Given I am on the jQuery UI home page
 
-  # ASSUMPTION: the task text for the Controlgroup case is cut off and names no actions.
-  # We exercise every control in the "Rental Car" form - car type selectmenu, transmission radio,
-  # insurance checkbox, number-of-cars spinner and "Book Now!" - in BOTH the horizontal and the
-  # vertical controlgroup, then verify each control kept the chosen state.
+  # The actions follow the reference image in the task: both "Rental Car" groups filled as shown,
+  # then "Book Now!" in the vertical group.
   @web_case3
-  Scenario Outline: Book a rental car with the <orientation> controlgroup
+  Scenario: Fill both rental car controlgroups as shown in the task
     Given I open the "Controlgroup" demo from the "Widgets" section of the sidebar
-    When I fill the <orientation> rental car form with:
-      | car type   | transmission   | insurance   | cars   |
-      | <car type> | <transmission> | <insurance> | <cars> |
-    And I click "Book Now!" in the <orientation> rental car form
-    Then the <orientation> rental car form should show:
-      | car type   | transmission   | insurance   | cars   |
-      | <car type> | <transmission> | <insurance> | <cars> |
-
-    Examples:
-      | orientation | car type    | transmission | insurance | cars |
-      | horizontal  | Compact car | Automatic    | true      | 2    |
-      | vertical    | SUV         | Automatic    | true      | 2    |
+    When I fill the horizontal rental car form with:
+      | car type | transmission | insurance | cars |
+      | SUV      | Automatic    | true      | 2    |
+    And I fill the vertical rental car form with:
+      | car type | transmission | insurance | cars |
+      | Truck    | Standard     | true      | 1    |
+    And I click "Book Now!" in the vertical rental car form
+    Then the horizontal rental car form should show:
+      | car type | transmission | insurance | cars |
+      | SUV      | Automatic    | true      | 2    |
+    And the vertical rental car form should show:
+      | car type | transmission | insurance | cars |
+      | Truck    | Standard     | true      | 1    |
 
   @smoke @web_case4
   Scenario: Pick today's date in the date picker

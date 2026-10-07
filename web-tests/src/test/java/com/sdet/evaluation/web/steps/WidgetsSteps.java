@@ -78,7 +78,9 @@ public class WidgetsSteps {
         RentalCarForm form = controlgroupPage.form(orientation);
 
         assertSoftly(softly -> {
-            softly.assertThat(form.selectedCarType()).as("%s form: car type", orientation).isEqualTo(expected.carType());
+            softly.assertThat(form.selectedCarType()).as("%s form: car type shown", orientation).isEqualTo(expected.carType());
+            softly.assertThat(form.nativeSelectedCarType()).as("%s form: car type selected in <select>", orientation)
+                    .isEqualTo(expected.carType());
             softly.assertThat(form.isChecked(expected.transmission()))
                     .as("%s form: transmission '%s' selected", orientation, expected.transmission()).isTrue();
             softly.assertThat(form.isChecked("Insurance")).as("%s form: insurance", orientation).isEqualTo(expected.insurance());

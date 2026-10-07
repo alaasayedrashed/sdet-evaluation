@@ -79,6 +79,11 @@ public class RentalCarForm {
         return root.locator(".ui-selectmenu-text").innerText().trim();
     }
 
+    /** Text of the option selected in the underlying (hidden) native {@code <select>}. */
+    public String nativeSelectedCarType() {
+        return (String) root.locator("select").evaluate("select => select.options[select.selectedIndex].text");
+    }
+
     /** {@code true} if the given radio/checkbox (by label) is checked, both natively and visually. */
     public boolean isChecked(String labelText) {
         Locator label = label(labelText);
