@@ -16,6 +16,15 @@ echo "::group::Start Appium server"
 appium --address 127.0.0.1 --port 4723 \
   --allow-insecure "*:chromedriver_autodownload" \
   --log-timestamp --log mobile-tests/target/appium.log &
+APPIUM_PID=$!
+# Always stop Appium when this script exits. A running Appium keeps adb connections (logcat,
+# UiAutomator2 port forwarding) open to the emulator, which makes the runner's "Terminate
+# Emulator" phase hang after the tests have finished.
+stop_appium() {
+  kill "$APPIUM_PID" 2>/dev/null && wait "$APPIUM_PID" 2>/dev/null
+  echo "Appium server stopped"
+}
+trap stop_appium EXIT
 # Poll /status until the server is ready (no fixed sleeps)
 curl --silent --fail --retry 30 --retry-delay 2 --retry-connrefused "${APPIUM_URL}/status" \
   || { echo "::error::Appium server did not start"; exit 1; }
