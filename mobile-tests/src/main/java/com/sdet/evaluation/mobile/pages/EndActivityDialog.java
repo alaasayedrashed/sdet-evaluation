@@ -12,11 +12,6 @@ public class EndActivityDialog extends BasePage {
 
     private static final By MESSAGE = By.id("android:id/message");
 
-    /** Dialog message text. */
-    public String message() {
-        return text(MESSAGE);
-    }
-
     /** Taps a dialog button by its label, e.g. {@code No, no} or {@code I agree}. */
     @Step("Choose \"{option}\" in the dialog")
     public void choose(String option) {

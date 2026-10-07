@@ -1,11 +1,9 @@
 package com.sdet.evaluation.core.utils;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -15,22 +13,6 @@ import java.nio.file.Path;
 public final class FileUtils {
 
     private FileUtils() {
-    }
-
-    /**
-     * Reads a classpath resource as UTF-8 text.
-     *
-     * @throws IllegalArgumentException if the resource does not exist
-     */
-    public static String readClasspathResource(String resourcePath) {
-        try (InputStream stream = classLoader().getResourceAsStream(resourcePath)) {
-            if (stream == null) {
-                throw new IllegalArgumentException("Resource not found on classpath: " + resourcePath);
-            }
-            return new String(stream.readAllBytes(), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new UncheckedIOException("Unable to read classpath resource: " + resourcePath, e);
-        }
     }
 
     /**
