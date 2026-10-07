@@ -23,8 +23,12 @@ env:
   # ~4 min instead of ~5 min with the google_apis image and a cached snapshot.
 
 jobs:
+  lint:
+    uses: ./.github/workflows/lint.yml
+
   mobile:
     name: Mobile (Appium + Android emulator)
+    needs: lint
     runs-on: ubuntu-24.04
     timeout-minutes: 60
 

@@ -69,6 +69,11 @@
         <maven-enforcer-plugin.version>3.6.3</maven-enforcer-plugin.version>
         <maven-dependency-plugin.version>3.11.0</maven-dependency-plugin.version>
         <allure-maven.version>3.1.0</allure-maven.version>
+        <spotless-maven-plugin.version>3.10.3</spotless-maven-plugin.version>
+        <!-- 1.37.0 fails inside spotless-maven-plugin 3.10.3 (InvocationTargetException); 1.36.0 is the newest that works -->
+        <google-java-format.version>1.36.0</google-java-format.version>
+        <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
+        <checkstyle.version>14.3.0</checkstyle.version>
         <!-- Allure 3 report generator used by allure-maven (renders Allure 3 HTTP-exchange attachments) -->
         <allure.report.version>3.20.1</allure.report.version>
         <allure.single.file>false</allure.single.file>
@@ -300,6 +305,23 @@
                     <artifactId>allure-maven</artifactId>
                     <version>${allure-maven.version}</version>
                 </plugin>
+                <plugin>
+                    <groupId>com.diffplug.spotless</groupId>
+                    <artifactId>spotless-maven-plugin</artifactId>
+                    <version>${spotless-maven-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-checkstyle-plugin</artifactId>
+                    <version>${maven-checkstyle-plugin.version}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.puppycrawl.tools</groupId>
+                            <artifactId>checkstyle</artifactId>
+                            <version>${checkstyle.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
             </plugins>
         </pluginManagement>
 
@@ -326,6 +348,59 @@
                                 <dependencyConvergence/>
                             </rules>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <!--
+                    Formatting: ./mvnw spotless:apply fixes it, ./mvnw spotless:check fails on unformatted files.
+                    Java: google-java-format. Text files: no trailing whitespace, newline at end of file.
+                    The text includes never overlap: root files are matched in the parent, src/** in the modules.
+                -->
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <configuration>
+                    <java>
+                        <googleJavaFormat>
+                            <version>${google-java-format.version}</version>
+                        </googleJavaFormat>
+                    </java>
+                    <formats>
+                        <format>
+                            <includes>
+                                <include>*.md</include>
+                                <include>*.yml</include>
+                                <include>.github/**/*.yml</include>
+                                <include>src/**/*.feature</include>
+                                <include>src/**/*.properties</include>
+                            </includes>
+                            <excludes>
+                                <exclude>.github/modernize/**</exclude>
+                            </excludes>
+                            <trimTrailingWhitespace/>
+                            <endWithNewline/>
+                        </format>
+                    </formats>
+                </configuration>
+            </plugin>
+            <plugin>
+                <!-- Small rule set in config/checkstyle.xml; runs in `validate`, so every build checks it -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <configuration>
+                    <configLocation>${maven.multiModuleProjectDirectory}/config/checkstyle.xml</configLocation>
+                    <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                    <consoleOutput>true</consoleOutput>
+                    <failOnViolation>true</failOnViolation>
+                    <violationSeverity>warning</violationSeverity>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>checkstyle</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>

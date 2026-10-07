@@ -26,14 +26,15 @@ One Maven multi-module repository that automates three kinds of testing with the
 4. [Running the tests](#running-the-tests)
 5. [Parallel runs](#parallel-runs)
 6. [Docker](#docker)
-7. [Reporting](#reporting)
-8. [CI/CD](#cicd)
-9. [Scenario coverage](#scenario-coverage)
-10. [Assumptions and notes](#assumptions-and-notes)
-11. [Design decisions](#design-decisions)
-12. [Java features used](#java-features-used)
-13. [Requirements → evidence](#requirements--evidence)
-14. [What I would add next](#what-i-would-add-next)
+7. [Code style](#code-style)
+8. [Reporting](#reporting)
+9. [CI/CD](#cicd)
+10. [Scenario coverage](#scenario-coverage)
+11. [Assumptions and notes](#assumptions-and-notes)
+12. [Design decisions](#design-decisions)
+13. [Java features used](#java-features-used)
+14. [Requirements → evidence](#requirements--evidence)
+15. [What I would add next](#what-i-would-add-next)
 
 ---
 
@@ -58,6 +59,8 @@ All versions are managed once in the parent [`pom.xml`](pom.xml) (`<properties>`
 | Logging | SLF4J / Log4j2 | 2.0.20 / 2.26.1 |
 | Boilerplate | Lombok | 1.18.48 |
 | Step capture | AspectJ weaver (`-javaagent`) | 1.9.25.1 |
+| Formatting | Spotless + google-java-format | 3.10.3 / 1.36.0 |
+| Static checks | Checkstyle (`maven-checkstyle-plugin`) | 14.3.0 (plugin 3.6.0) |
 
 Why Cucumber **7** and not 8: Allure has no Cucumber 8 adapter yet (only `allure-cucumber7-jvm`).
 
@@ -118,6 +121,8 @@ flowchart TB
 sdet-evaluation/
 ├── pom.xml                  parent: modules, versions, enforcer, surefire + AspectJ agent, allure-maven
 ├── allurerc.mjs             Allure 3 report config: per-module environments, categories, variables
+├── config/checkstyle.xml    small Checkstyle rule set (see Code style)
+├── .editorconfig            editor settings matching the formatter
 ├── Dockerfile               web + API runner on the official Playwright Java image
 ├── docker-compose.yml       one-command run: docker compose run --rm web-api
 ├── .env.example             optional settings for the Docker run (copy to .env)
@@ -127,7 +132,7 @@ sdet-evaluation/
 ├── mobile-tests/            driver/ (DriverFactory, AppLauncher, ScreenCapture), pages/, models/
 │   └── src/test/resources/apps/selendroid-test-app.apk
 └── .github/
-    ├── workflows/           api-web-tests.yml, mobile-tests.yml, allure-report.yml
+    ├── workflows/           lint.yml, api-web-tests.yml, mobile-tests.yml, allure-report.yml
     └── scripts/             run-mobile-tests.sh
 ```
 
@@ -280,6 +285,19 @@ docker compose run --rm web-api
 
 ---
 
+## Code style
+
+```bash
+./mvnw spotless:apply     # format everything
+./mvnw spotless:check     # fail if anything is not formatted (CI runs this)
+```
+
+- **Formatting:** [Spotless](https://github.com/diffplug/spotless) with **google-java-format** (2-space indentation) for Java; Markdown, YAML, feature and properties files get trailing whitespace trimmed and a final newline. [`.editorconfig`](.editorconfig) gives editors the same settings.
+- **Checkstyle:** a small rule set in [`config/checkstyle.xml`](config/checkstyle.xml): naming conventions, unused/star imports, empty catch blocks, no `System.out`/`System.err` (use the logger) and no `Thread.sleep` (use explicit waits). Layout rules are left to the formatter. It runs in Maven's `validate` phase, so every build fails on a violation; `./mvnw checkstyle:check` runs it alone.
+- google-java-format is pinned to 1.36.0: 1.37.0 fails inside the current Spotless plugin (3.10.3).
+
+---
+
 ## Reporting
 
 Every module writes Allure results to **one** folder at the repository root (`./allure-results`), so the report is combined automatically.
@@ -331,6 +349,7 @@ The report's title shows "Allure": the `allure-maven` plugin has no option for t
 
 | Workflow | Trigger | What it does |
 |---|---|---|
+| [`lint.yml`](.github/workflows/lint.yml) | called first by both test workflows | `spotless:check` + `checkstyle:check` on Temurin 25 (well under a minute). The test jobs run only if it passes. |
 | [`api-web-tests.yml`](.github/workflows/api-web-tests.yml) | push, pull request, manual | Runs inside the official Playwright Java image (Maven and browsers preinstalled) with Temurin 25 from `setup-java`, like the other workflows, and a Maven cache. Headless API + web tests, 4 threads. Always uploads `allure-results` and a single-file HTML report; uploads traces and logs on failure. About 2 min. |
 | [`mobile-tests.yml`](.github/workflows/mobile-tests.yml) | push, pull request, manual | KVM-enabled Ubuntu, one API 30 **ATD** emulator (Google's headless "Automated Test Device" image, 4 cores, clean boot each run), Appium 3.8.0 + UiAutomator2 8.7.0, then runs [`run-mobile-tests.sh`](.github/scripts/run-mobile-tests.sh). Always uploads results, a single-file HTML report, the Appium log and framework logs. About 4 min. |
 | [`allure-report.yml`](.github/workflows/allure-report.yml) | after either test workflow finishes on `main`, or manual | Waits until results from **both** workflows exist for the same commit, merges them into one Allure report and deploys it to **GitHub Pages**. |
@@ -481,6 +500,7 @@ Each requirement from the task, and where to find it:
 | No hardcoded URLs, credentials, timeouts or devices | `config/*.properties` with `-D` / environment overrides; test data in feature files | ✅ |
 | *Extra:* parallel runs | `-Dthreads`, default 4, for web and API ([Parallel runs](#parallel-runs)) | ✅ |
 | *Extra:* Docker | `docker compose run --rm web-api` ([Docker](#docker)) | ✅ |
+| *Extra:* formatting and static checks | Spotless + google-java-format, Checkstyle in `validate`, CI lint job ([Code style](#code-style)) | ✅ |
 | *Extra:* Java 25, enforcer, wrapper | `maven.compiler.release=25`; enforcer `requireJavaVersion [25,)`, `requireMavenVersion [3.9,)`, `dependencyConvergence`; `mvnw` / `.mvn/wrapper` | ✅ |
 
 ---
@@ -492,4 +512,4 @@ Each requirement from the task, and where to find it:
 - **Contract testing** (Pact) for API consumers, beyond the JSON schema.
 - **Visual testing** (Playwright screenshot comparison) for the jQuery UI widgets.
 - **Report history** across CI runs (Allure 3 `historyPath` stored on the Pages branch), and Slack/Teams notifications from the report.
-- **Static analysis** in CI (Checkstyle/Spotless, SpotBugs) and Dependabot for version updates.
+- **Dependabot** for version updates.

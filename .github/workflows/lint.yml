@@ -1,0 +1,29 @@
+name: Lint
+
+# Reusable lint job (formatting + Checkstyle). Both test workflows call it first and only run their
+# tests when it passes, so a style problem fails fast instead of after a full test run.
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint (Spotless + Checkstyle)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Set up JDK 25 (Temurin)
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+
+      - name: Check formatting and Checkstyle rules
+        run: ./mvnw -B -ntp spotless:check checkstyle:check

@@ -13,11 +13,15 @@ permissions:
   contents: read
 
 jobs:
+  lint:
+    uses: ./.github/workflows/lint.yml
+
   api-web:
     name: API (REST Assured) + Web (Playwright)
+    needs: lint
     runs-on: ubuntu-24.04
     timeout-minutes: 30
-    # Official Playwright Java image (same as the Dockerfile): JDK, Maven and browsers preinstalled,
+    # Official Playwright Java image (same as the Dockerfile): Maven and browsers preinstalled,
     # so there is no browser or OS-package install step
     container:
       image: mcr.microsoft.com/playwright/java:v1.63.0-noble

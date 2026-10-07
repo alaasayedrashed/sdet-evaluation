@@ -1,0 +1,21 @@
+# Editor settings matching the build's formatter (Spotless + google-java-format) and .gitattributes
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+# google-java-format: 2-space indentation
+[*.java]
+indent_size = 2
+
+[*.{yml,yaml,json,feature,mjs}]
+indent_size = 2
+
+# Windows scripts keep CRLF (see .gitattributes)
+[*.{cmd,bat}]
+end_of_line = crlf
