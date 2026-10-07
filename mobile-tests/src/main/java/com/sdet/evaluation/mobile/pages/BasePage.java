@@ -85,7 +85,7 @@ public abstract class BasePage {
         try {
             await(timeout).until(ExpectedConditions.visibilityOfElementLocated(locator));
             return true;
-        } catch (TimeoutException e) {
+        } catch (TimeoutException _) {
             return false;
         }
     }
@@ -94,7 +94,7 @@ public abstract class BasePage {
     protected boolean waitUntilGone(By locator, Duration timeout) {
         try {
             return await(timeout).until(ExpectedConditions.invisibilityOfElementLocated(locator));
-        } catch (TimeoutException e) {
+        } catch (TimeoutException _) {
             return false;
         }
     }
@@ -125,8 +125,8 @@ public abstract class BasePage {
      */
     @Step("Switch to WebView context")
     public void switchToWebView() {
-        String webView = await(MobileConfig.webViewTimeout()).until(driver -> {
-            Set<String> contexts = this.driver().getContextHandles();
+        String webView = await(MobileConfig.webViewTimeout()).until(_ -> {
+            Set<String> contexts = driver().getContextHandles();
             log.info("Available contexts: {}", contexts);
             return contexts.stream().filter(context -> context.startsWith(WEBVIEW_PREFIX)).findFirst().orElse(null);
         });

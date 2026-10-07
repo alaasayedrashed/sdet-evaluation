@@ -28,6 +28,13 @@ jobs:
       - name: Check out
         uses: actions/checkout@v7
 
+      # The image already has OpenJDK 25; use Temurin 25 like every other workflow
+      - name: Set up JDK 25 (Temurin)
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "25"
+
       - name: Cache Maven repository
         uses: actions/cache@v6
         with:

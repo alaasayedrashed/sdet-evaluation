@@ -90,7 +90,7 @@ public final class AllureUtils {
         }
         try {
             return JSON.writeValueAsString(JSON.readTree(json));
-        } catch (IOException e) {
+        } catch (IOException _) {
             return json;
         }
     }

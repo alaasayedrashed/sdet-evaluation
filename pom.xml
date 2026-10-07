@@ -24,10 +24,10 @@
 
     <properties>
         <!-- ===== Build ===== -->
-        <maven.compiler.release>21</maven.compiler.release>
+        <maven.compiler.release>25</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <required.java.version>[21,)</required.java.version>
+        <required.java.version>[25,)</required.java.version>
         <required.maven.version>[3.9,)</required.maven.version>
 
         <!-- Parallel scenario threads for the web and API runners (override with -Dthreads=N) -->
@@ -317,7 +317,7 @@
                             <rules>
                                 <requireJavaVersion>
                                     <version>${required.java.version}</version>
-                                    <message>JDK 21 or newer is required (found ${java.version}). Install Temurin 21 and point JAVA_HOME at it.</message>
+                                    <message>JDK 25 or newer is required (found ${java.version}). Install Temurin 25 and point JAVA_HOME at it.</message>
                                 </requireJavaVersion>
                                 <requireMavenVersion>
                                     <version>${required.maven.version}</version>

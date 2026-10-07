@@ -38,11 +38,11 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: Set up JDK 21 (Temurin)
+      - name: Set up JDK 25 (Temurin)
         uses: actions/setup-java@v6
         with:
           distribution: temurin
-          java-version: "21"
+          java-version: "25"
           cache: maven
 
       - name: Set up Node (Appium server)

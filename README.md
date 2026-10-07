@@ -31,7 +31,7 @@ One Maven multi-module repository that automates three kinds of testing with the
 9. [Scenario coverage](#scenario-coverage)
 10. [Assumptions and notes](#assumptions-and-notes)
 11. [Design decisions](#design-decisions)
-12. [Java 21 features used](#java-21-features-used)
+12. [Java features used](#java-features-used)
 13. [Requirements → evidence](#requirements--evidence)
 14. [What I would add next](#what-i-would-add-next)
 
@@ -43,7 +43,7 @@ All versions are managed once in the parent [`pom.xml`](pom.xml) (`<properties>`
 
 | Area | Library / tool | Version |
 |---|---|---|
-| Language | Java (Temurin) | **21 LTS** |
+| Language | Java (Temurin) | **25 LTS** |
 | Build | Maven (via wrapper `./mvnw`) | 3.10.0 |
 | Test runner | TestNG | 7.12.0 |
 | BDD | Cucumber (`cucumber-java`, `-testng`, `-picocontainer`) | 7.34.9 |
@@ -162,7 +162,7 @@ Every test module follows the same layout: framework code (drivers, page objects
 
 | Needed for | Requirement |
 |---|---|
-| Everything | **JDK 21** (or newer). The enforcer stops the build with a clear message on an older JDK; `.java-version` pins 21. |
+| Everything | **JDK 25**: the latest LTS, supported by every library in the stack. The enforcer stops the build with a clear message on an older JDK; `.java-version` pins 25. |
 | Everything | **No Maven install needed**: use the bundled wrapper `./mvnw` (Windows: `mvnw.cmd`). |
 | Report | Nothing extra. The `allure-maven` plugin downloads the Allure 3 generator (and its own Node.js) into `.allure/` on first use. |
 | Web | Nothing extra. Playwright downloads its browsers on first run. |
@@ -274,7 +274,7 @@ docker compose run --rm web-api
 - **Mounts:** [`docker-compose.yml`](docker-compose.yml) mounts the repository, so `allure-results/` and the module `target/` folders land on the host. A named volume caches the Maven repository, so later runs are faster (about 80 s for the first run, about 50 s after that, measured locally).
 - **Settings:** optional overrides go in a `.env` file (git-ignored); see [`.env.example`](.env.example). Any key from `config/*.properties` can be set there as an environment variable, e.g. `API_KEY=...` or `WEB_BROWSER=firefox`.
 - **Notes:**
-  - The image ships **JDK 25**. The code is still compiled for Java 21 (`maven.compiler.release=21`), and the enforcer accepts 21 or newer.
+  - The image already ships **JDK 25** (Ubuntu's OpenJDK build), the project's Java version, so no JDK is installed on top of it.
   - On Linux, files the container writes through the bind mount (`allure-results/`, `target/`) are owned by `root`; delete them with `sudo` if needed.
   - **Mobile is not containerised.** An Android emulator in Docker needs KVM, which only Linux hosts provide (Docker Desktop on Windows/macOS has none). Mobile runs on a local emulator, and in CI on GitHub's KVM-enabled runners.
 
@@ -331,7 +331,7 @@ The report's title shows "Allure": the `allure-maven` plugin has no option for t
 
 | Workflow | Trigger | What it does |
 |---|---|---|
-| [`api-web-tests.yml`](.github/workflows/api-web-tests.yml) | push, pull request, manual | Runs inside the official Playwright Java image (JDK, Maven and browsers preinstalled), with a Maven cache. Headless API + web tests, 4 threads. Always uploads `allure-results` and a single-file HTML report; uploads traces and logs on failure. About 2 min. |
+| [`api-web-tests.yml`](.github/workflows/api-web-tests.yml) | push, pull request, manual | Runs inside the official Playwright Java image (Maven and browsers preinstalled) with Temurin 25 from `setup-java`, like the other workflows, and a Maven cache. Headless API + web tests, 4 threads. Always uploads `allure-results` and a single-file HTML report; uploads traces and logs on failure. About 2 min. |
 | [`mobile-tests.yml`](.github/workflows/mobile-tests.yml) | push, pull request, manual | KVM-enabled Ubuntu, one API 30 **ATD** emulator (Google's headless "Automated Test Device" image, 4 cores, clean boot each run), Appium 3.8.0 + UiAutomator2 8.7.0, then runs [`run-mobile-tests.sh`](.github/scripts/run-mobile-tests.sh). Always uploads results, a single-file HTML report, the Appium log and framework logs. About 4 min. |
 | [`allure-report.yml`](.github/workflows/allure-report.yml) | after either test workflow finishes on `main`, or manual | Waits until results from **both** workflows exist for the same commit, merges them into one Allure report and deploys it to **GitHub Pages**. |
 
@@ -443,12 +443,13 @@ Other CI choices:
 
 ---
 
-## Java 21 features used
+## Java features used
 
 | Feature | Where |
 |---|---|
 | **Records** | `CreateUserRequest` (immutable request body, with Lombok `@Builder`), `UserRegistration` (mobile form data compared across steps), `WidgetsSteps.RentalCarBooking` (Gherkin table row), `ResizablePage.Size`, web `BasePage.Point`, `AppLauncher.SystemScreen` |
 | **Switch expressions** | `ConfigReader` (boolean and duration parsing), `PlaywrightFactory.browserType()` |
+| **Unnamed variables `_`** (Java 22+) | Catch blocks that deliberately ignore the exception (`BasePage.isVisible`, `DriverFactory.isAlive`, `AllureUtils`, `HomePage.typeIntoCrashField`) and unused lambda parameters (`RequestSpecFactory`, `BasePage.switchToWebView`) |
 | **`var`, `String.formatted`, `Stream.toList()`, `Optional.or`** | Throughout, where the type is obvious |
 
 Response models stay plain Lombok classes (`@Data`), because Jackson binding with setters is clearer there than records.
@@ -480,7 +481,7 @@ Each requirement from the task, and where to find it:
 | No hardcoded URLs, credentials, timeouts or devices | `config/*.properties` with `-D` / environment overrides; test data in feature files | ✅ |
 | *Extra:* parallel runs | `-Dthreads`, default 4, for web and API ([Parallel runs](#parallel-runs)) | ✅ |
 | *Extra:* Docker | `docker compose run --rm web-api` ([Docker](#docker)) | ✅ |
-| *Extra:* Java 21, enforcer, wrapper | `maven.compiler.release=21`; enforcer `requireJavaVersion [21,)`, `requireMavenVersion [3.9,)`, `dependencyConvergence`; `mvnw` / `.mvn/wrapper` | ✅ |
+| *Extra:* Java 25, enforcer, wrapper | `maven.compiler.release=25`; enforcer `requireJavaVersion [25,)`, `requireMavenVersion [3.9,)`, `dependencyConvergence`; `mvnw` / `.mvn/wrapper` | ✅ |
 
 ---
 

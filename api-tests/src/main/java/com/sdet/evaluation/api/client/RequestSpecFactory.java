@@ -45,7 +45,7 @@ public final class RequestSpecFactory {
                         .setParam("http.socket.timeout", (int) ApiConfig.readTimeout().toMillis()))
                 // The API adds fields over time (e.g. "_meta"); tests assert only what they care about
                 .objectMapperConfig(ObjectMapperConfig.objectMapperConfig()
-                        .jackson2ObjectMapperFactory((type, charset) -> new ObjectMapper()
+                        .jackson2ObjectMapperFactory((_, _) -> new ObjectMapper()
                                 .findAndRegisterModules()
                                 .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)));
     }

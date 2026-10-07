@@ -131,7 +131,7 @@ public final class DriverFactory {
             driver.getStatus();
             driver.queryAppState(MobileConfig.appPackage());
             return true;
-        } catch (WebDriverException e) {
+        } catch (WebDriverException _) {
             return false;
         }
     }

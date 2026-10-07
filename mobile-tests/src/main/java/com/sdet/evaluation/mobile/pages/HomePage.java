@@ -140,7 +140,7 @@ public class HomePage extends BasePage {
         WebElement field = visible(CRASH_FIELD);
         try {
             field.sendKeys(text);
-        } catch (StaleElementReferenceException e) {
+        } catch (StaleElementReferenceException _) {
             LOG.warn("Field disappeared while typing '{}' - the app most likely crashed", text);
         }
     }

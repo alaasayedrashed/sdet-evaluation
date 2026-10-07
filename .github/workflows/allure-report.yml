@@ -81,12 +81,12 @@ jobs:
           run-id: ${{ steps.runs.outputs.mobile }}
           github-token: ${{ github.token }}
 
-      - name: Set up JDK 21 (Temurin)
+      - name: Set up JDK 25 (Temurin)
         if: steps.runs.outputs.ready == 'true'
         uses: actions/setup-java@v6
         with:
           distribution: temurin
-          java-version: "21"
+          java-version: "25"
           cache: maven
 
 

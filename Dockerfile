@@ -1,4 +1,4 @@
-# Web + API test runner. The official Playwright Java image already contains a JDK, Maven and the
+# Web + API test runner. The official Playwright Java image already contains JDK 25, Maven and the
 # browsers, so nothing is installed here. Keep the tag in sync with playwright.version in pom.xml.
 FROM mcr.microsoft.com/playwright/java:v1.63.0-noble
 
