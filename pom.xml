@@ -67,9 +67,8 @@
         <maven-dependency-plugin.version>3.11.0</maven-dependency-plugin.version>
         <exec-maven-plugin.version>3.6.4</exec-maven-plugin.version>
         <allure-maven.version>3.1.0</allure-maven.version>
-        <!-- Allure 3 report CLI (npm), run through npx; renders Allure 3 HTTP-exchange attachments -->
-        <allure.cli.version>3.20.1</allure.cli.version>
-        <npx.executable>npx</npx.executable>
+        <!-- Allure 3 report generator used by allure-maven (renders Allure 3 HTTP-exchange attachments) -->
+        <allure.report.version>3.20.1</allure.report.version>
     </properties>
 
     <dependencyManagement>
@@ -346,52 +345,21 @@
             </plugin>
             <plugin>
                 <!--
-                    Combined Allure 3 report for every module, run on demand from the repo root:
-                      ./mvnw -N exec:exec@allure-report   -> builds ./allure-report from ./allure-results
-                      ./mvnw -N exec:exec@allure-serve    -> opens the built report in a browser
-                    Configuration (environments per module, categories, variables): allurerc.mjs
+                    Combined Allure 3 report for every module, run from the repo root after the tests:
+                      ./mvnw -N allure:report   -> builds ./allure-report from ./allure-results
+                      ./mvnw -N allure:serve    -> builds and opens the report in a browser
+                    The plugin downloads its own Node runtime, so nothing else needs to be installed.
+                    Report configuration (one tab per module, categories, variables): allurerc.mjs
                 -->
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
+                <groupId>io.qameta.allure</groupId>
+                <artifactId>allure-maven</artifactId>
                 <inherited>false</inherited>
-                <executions>
-                    <execution>
-                        <id>allure-report</id>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>${npx.executable}</executable>
-                            <workingDirectory>${maven.multiModuleProjectDirectory}</workingDirectory>
-                            <arguments>
-                                <argument>--yes</argument>
-                                <argument>allure@${allure.cli.version}</argument>
-                                <argument>generate</argument>
-                                <argument>${allure.results.directory}</argument>
-                                <argument>--config</argument>
-                                <argument>allurerc.mjs</argument>
-                                <argument>--output</argument>
-                                <argument>${allure.report.directory}</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>allure-serve</id>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>${npx.executable}</executable>
-                            <workingDirectory>${maven.multiModuleProjectDirectory}</workingDirectory>
-                            <arguments>
-                                <argument>--yes</argument>
-                                <argument>allure@${allure.cli.version}</argument>
-                                <argument>open</argument>
-                                <argument>${allure.report.directory}</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                </executions>
+                <configuration>
+                    <reportVersion>${allure.report.version}</reportVersion>
+                    <resultsDirectory>${allure.results.directory}</resultsDirectory>
+                    <reportDirectory>${allure.report.directory}</reportDirectory>
+                    <configPath>${maven.multiModuleProjectDirectory}/allurerc.mjs</configPath>
+                </configuration>
             </plugin>
             <plugin>
                 <!-- `clean` on the parent also wipes the combined Allure output at the repo root -->
@@ -412,18 +380,4 @@
         </plugins>
     </build>
 
-    <profiles>
-        <profile>
-            <!-- On Windows npx is a .cmd shim -->
-            <id>windows</id>
-            <activation>
-                <os>
-                    <family>windows</family>
-                </os>
-            </activation>
-            <properties>
-                <npx.executable>npx.cmd</npx.executable>
-            </properties>
-        </profile>
-    </profiles>
 </project>

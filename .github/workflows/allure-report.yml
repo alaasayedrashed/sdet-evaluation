@@ -89,15 +89,10 @@ jobs:
           java-version: "21"
           cache: maven
 
-      - name: Set up Node (Allure 3 report CLI)
-        if: steps.runs.outputs.ready == 'true'
-        uses: actions/setup-node@v7
-        with:
-          node-version: "22"
 
       - name: Generate the combined Allure report
         if: steps.runs.outputs.ready == 'true'
-        run: ./mvnw -B -ntp -N exec:exec@allure-report
+        run: ./mvnw -B -ntp -N allure:report
 
       - name: Configure GitHub Pages
         if: steps.runs.outputs.ready == 'true'

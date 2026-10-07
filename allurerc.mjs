@@ -1,6 +1,6 @@
 // Allure 3 report configuration (https://allurereport.org/docs/v3/configure/).
-// Used by `./mvnw -N exec:exec@allure-report` (local and CI). A plain object is exported (no
-// `import { defineConfig } from "allure"`) because the CLI runs via npx from its own cache.
+// Used by `./mvnw -N allure:report` (local and CI). A plain object is exported (no
+// `import { defineConfig } from "allure"`) because the Allure CLI is installed by the Maven plugin.
 
 const env = process.env;
 

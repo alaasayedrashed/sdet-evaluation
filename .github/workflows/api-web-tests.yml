@@ -29,10 +29,6 @@ jobs:
           java-version: "21"
           cache: maven
 
-      - name: Set up Node (Allure 3 report CLI)
-        uses: actions/setup-node@v7
-        with:
-          node-version: "22"
 
       - name: Build framework (no tests)
         run: ./mvnw -B -ntp install -DskipTests -pl api-tests,web-tests -am
@@ -74,7 +70,7 @@ jobs:
 
       - name: Generate Allure HTML report
         if: always()
-        run: ./mvnw -B -ntp -N exec:exec@allure-report
+        run: ./mvnw -B -ntp -N allure:report
 
       - name: Upload Allure HTML report
         if: always()
