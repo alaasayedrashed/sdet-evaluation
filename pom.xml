@@ -17,6 +17,7 @@
 
     <modules>
         <module>core</module>
+        <module>api-tests</module>
     </modules>
 
     <properties>
@@ -224,6 +225,11 @@
                             ${org.aspectj:aspectjweaver:jar} is resolved by dependency:properties (see below).
                             Quoted because the local repository path may contain spaces.
                         -->
+                        <!-- Unit tests (*Test) and Cucumber runners (*Runner) -->
+                        <includes>
+                            <include>**/*Test.java</include>
+                            <include>**/*Runner.java</include>
+                        </includes>
                         <argLine>-javaagent:"${org.aspectj:aspectjweaver:jar}" -Dfile.encoding=UTF-8</argLine>
                         <systemPropertyVariables>
                             <allure.results.directory>${allure.results.directory}</allure.results.directory>
