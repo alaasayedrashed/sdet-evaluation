@@ -18,6 +18,9 @@ env:
   UIAUTOMATOR2_DRIVER_VERSION: "8.7.0"
   # API 30 (Android 11): the app targets SDK 10, which newer images refuse to install
   ANDROID_API_LEVEL: "30"
+  # ATD = Google's "Automated Test Device" image, built for headless CI: boots faster and runs fewer
+  # background services. With 4 cores and a cold boot (no snapshot cache to go stale) the job takes
+  # ~4 min instead of ~5 min with the google_apis image and a cached snapshot.
 
 jobs:
   mobile:
@@ -57,28 +60,6 @@ jobs:
       - name: Build framework (no tests)
         run: ./mvnw -B -ntp install -DskipTests -pl mobile-tests -am
 
-      - name: Cache AVD snapshot
-        uses: actions/cache@v6
-        id: avd-cache
-        with:
-          path: |
-            ~/.android/avd/*
-            ~/.android/adb*
-          key: avd-${{ env.ANDROID_API_LEVEL }}-google_apis-x86_64
-
-      - name: Create AVD snapshot for caching
-        if: steps.avd-cache.outputs.cache-hit != 'true'
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: ${{ env.ANDROID_API_LEVEL }}
-          target: google_apis
-          arch: x86_64
-          profile: pixel_5
-          force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: false
-          script: echo "Generated AVD snapshot for caching."
-
       - name: Run mobile tests on the emulator
         # Tests take ~5 min on a hosted runner; the cap stops a stuck emulator shutdown from
         # consuming the whole job budget
@@ -86,11 +67,12 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ env.ANDROID_API_LEVEL }}
-          target: google_apis
+          target: aosp_atd   # see env comment above
+          cores: 4
           arch: x86_64
           profile: pixel_5
           force-avd-creation: false
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           script: bash .github/scripts/run-mobile-tests.sh
 
@@ -107,7 +89,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: mobile-diagnostics
+          name: mobile-diagnostics-aosp_atd
           path: |
             mobile-tests/target/appium.log
             mobile-tests/target/logs
