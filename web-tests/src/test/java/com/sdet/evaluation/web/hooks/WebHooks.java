@@ -16,14 +16,21 @@ import org.slf4j.LoggerFactory;
  *
  * <ul>
  *   <li>{@code @Before}: start a fresh browser/context/page (with tracing if enabled)
- *   <li>{@code @AfterStep}: screenshot after every step of scenarios tagged {@code @screenshots}
- *   <li>{@code @After}: always a final screenshot; on failure also URL, page HTML and the
- *       Playwright trace; then close the browser no matter what happened
+ *   <li>{@code @AfterStep}: on the failed step, the failure screenshot, URL and page HTML;
+ *       otherwise a step screenshot for scenarios tagged {@code @screenshots}. Attaching here puts
+ *       the evidence on the test itself: Allure reports {@code @After} attachments under the
+ *       collapsed "Tear down" section, where screenshots are easy to miss
+ *   <li>{@code @After}: final screenshot on success, the Playwright trace on failure; then close
+ *       the browser no matter what happened
  * </ul>
  */
 public class WebHooks {
 
   private static final Logger LOG = LoggerFactory.getLogger(WebHooks.class);
+  private static final String SCREENSHOTS_TAG = "@screenshots";
+
+  /** Hooks are created per scenario, so this only guards against attaching the evidence twice. */
+  private boolean failureEvidenceAttached;
 
   @Before
   public void startBrowser(Scenario scenario) {
@@ -31,10 +38,14 @@ public class WebHooks {
     PlaywrightFactory.start();
   }
 
-  /** Screenshot after every step, only for scenarios tagged {@code @screenshots} (key flows). */
-  @AfterStep("@screenshots")
-  public void screenshotAfterStep() {
-    if (PlaywrightFactory.isStarted()) {
+  @AfterStep
+  public void evidenceAfterStep(Scenario scenario) {
+    if (!PlaywrightFactory.isStarted()) {
+      return;
+    }
+    if (scenario.isFailed()) {
+      attachFailureEvidence();
+    } else if (scenario.getSourceTagNames().contains(SCREENSHOTS_TAG)) {
       attachScreenshot("Step screenshot");
     }
   }
@@ -44,9 +55,11 @@ public class WebHooks {
     try {
       if (PlaywrightFactory.isStarted()) {
         boolean failed = scenario.isFailed();
-        attachScreenshot(failed ? "Failure screenshot" : "Final screenshot");
         if (failed) {
-          attachPageDetails();
+          // No-op when @AfterStep already attached it; covers failures before any step ran
+          attachFailureEvidence();
+        } else {
+          attachScreenshot("Final screenshot");
         }
         PlaywrightFactory.stopTracing(failed, traceFileName(scenario))
             .ifPresent(
@@ -61,6 +74,15 @@ public class WebHooks {
       PlaywrightFactory.stop();
       LOG.info("=== END ({}): {}", scenario.getStatus(), scenario.getName());
     }
+  }
+
+  private void attachFailureEvidence() {
+    if (failureEvidenceAttached) {
+      return;
+    }
+    failureEvidenceAttached = true;
+    attachScreenshot("Failure screenshot");
+    attachPageDetails();
   }
 
   private void attachScreenshot(String name) {

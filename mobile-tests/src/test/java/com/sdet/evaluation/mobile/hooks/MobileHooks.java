@@ -23,16 +23,24 @@ import org.slf4j.LoggerFactory;
  * <ul>
  *   <li>{@code @Before}: reuse (or recreate) the Appium session and relaunch the app, so every
  *       scenario starts on the home screen - even right after a crash
- *   <li>{@code @AfterStep}: screenshot after every step of scenarios tagged {@code @screenshots}
- *   <li>{@code @After}: final screenshot; on failure also app state, page source and logcat. Every
- *       capture is isolated in its own try/catch because, after a crash, any of them may fail - and
- *       evidence collection must never break the rest of the suite
+ *   <li>{@code @AfterStep}: on the failed step, the failure screenshot, app state, page source and
+ *       logcat; otherwise a step screenshot for scenarios tagged {@code @screenshots}. Attaching
+ *       here puts the evidence on the test itself: Allure reports {@code @After} attachments under
+ *       the collapsed "Tear down" section, where screenshots are easy to miss
+ *   <li>{@code @After}: final screenshot on success; failure evidence if no step ran
  *   <li>{@code @AfterAll}: close the app and end the Appium session
  * </ul>
+ *
+ * Every capture is isolated in its own try/catch because, after a crash, any of them may fail - and
+ * evidence collection must never break the rest of the suite.
  */
 public class MobileHooks {
 
   private static final Logger LOG = LoggerFactory.getLogger(MobileHooks.class);
+  private static final String SCREENSHOTS_TAG = "@screenshots";
+
+  /** Hooks are created per scenario, so this only guards against attaching the evidence twice. */
+  private boolean failureEvidenceAttached;
 
   @Before
   public void launchApp(Scenario scenario) {
@@ -40,10 +48,16 @@ public class MobileHooks {
     AppLauncher.restartApp();
   }
 
-  /** Screenshot after every step, only for scenarios tagged {@code @screenshots} (key flows). */
-  @AfterStep("@screenshots")
-  public void screenshotAfterStep() {
-    attachScreenshot("Step screenshot");
+  @AfterStep
+  public void evidenceAfterStep(Scenario scenario) {
+    if (!DriverFactory.hasDriver()) {
+      return;
+    }
+    if (scenario.isFailed()) {
+      attachFailureEvidence();
+    } else if (scenario.getSourceTagNames().contains(SCREENSHOTS_TAG)) {
+      attachScreenshot("Step screenshot");
+    }
   }
 
   @After
@@ -51,10 +65,11 @@ public class MobileHooks {
     if (!DriverFactory.hasDriver()) {
       return;
     }
-    boolean failed = scenario.isFailed();
-    attachScreenshot(failed ? "Failure screenshot" : "Final screenshot");
-    if (failed) {
-      attachFailureDetails();
+    if (scenario.isFailed()) {
+      // No-op when @AfterStep already attached it; covers failures before any step ran
+      attachFailureEvidence();
+    } else {
+      attachScreenshot("Final screenshot");
     }
     LOG.info("=== END ({}): {}", scenario.getStatus(), scenario.getName());
   }
@@ -62,6 +77,15 @@ public class MobileHooks {
   @AfterAll
   public static void endSession() {
     DriverFactory.quit();
+  }
+
+  private void attachFailureEvidence() {
+    if (failureEvidenceAttached) {
+      return;
+    }
+    failureEvidenceAttached = true;
+    attachScreenshot("Failure screenshot");
+    attachFailureDetails();
   }
 
   private void attachScreenshot(String name) {
@@ -72,6 +96,8 @@ public class MobileHooks {
           "Could not capture screenshot '{}' (session may be unstable after a crash): {}",
           name,
           e.getMessage());
+      // Leave a visible trace in the report instead of a silently missing image
+      AllureUtils.attachText(name + " unavailable", String.valueOf(e.getMessage()));
     }
   }
 

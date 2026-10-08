@@ -332,6 +332,8 @@ What the report contains:
 
   Page-object methods annotated with `@Step` appear as nested steps (AspectJ weaving), so a Cucumber step expands into the actions it performed.
 
+  **Where to find failure evidence:** open the failed test's **Attachments** tab, or the failed step in the test body. The failure evidence is attached in an `@AfterStep` hook, so it belongs to the test itself. Attachments made in `@After` hooks (the final screenshot on success, the Playwright trace) are listed under the collapsed **Tear down** section. If a mobile session is dead after a crash, a "Failure screenshot unavailable" text with the error is attached instead of the image.
+
 The report's title shows "Allure": the `allure-maven` plugin has no option for the report name.
 
 ### Screenshots
