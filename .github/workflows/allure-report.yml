@@ -50,7 +50,8 @@ jobs:
         run: |
           latest_completed() {
             gh run list --repo "$GITHUB_REPOSITORY" --workflow "$1" --commit "$SHA" \
-              --json databaseId,status --jq '[.[] | select(.status == "completed")][0].databaseId // empty'
+              --json databaseId,status,conclusion \
+              --jq '[.[] | select(.status == "completed" and .conclusion != "cancelled")][0].databaseId // empty'
           }
           api_web=$(latest_completed api-web-tests.yml)
           mobile=$(latest_completed mobile-tests.yml)
@@ -88,7 +89,6 @@ jobs:
           distribution: temurin
           java-version: "25"
           cache: maven
-
 
       - name: Generate the combined Allure report
         if: steps.runs.outputs.ready == 'true'

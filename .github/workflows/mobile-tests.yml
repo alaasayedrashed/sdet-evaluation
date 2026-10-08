@@ -65,7 +65,7 @@ jobs:
         run: ./mvnw -B -ntp install -DskipTests -pl mobile-tests -am
 
       - name: Run mobile tests on the emulator
-        # Tests take ~5 min on a hosted runner; the cap stops a stuck emulator shutdown from
+        # Tests take ~4 min on a hosted runner; the cap stops a stuck emulator shutdown from
         # consuming the whole job budget
         timeout-minutes: 25
         uses: reactivecircus/android-emulator-runner@v2

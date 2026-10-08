@@ -4,8 +4,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Response of {@code POST /users}. {@code createdAt} is kept as the raw string so tests can assert
- * that the server returned a valid ISO-8601 timestamp.
+ * Response of {@code POST /users}. {@code createdAt} is checked by the JSON schema ({@code
+ * date-time} format), so it is kept as the raw string.
  */
 @Data
 @NoArgsConstructor

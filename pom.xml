@@ -257,14 +257,14 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven-surefire-plugin.version}</version>
                     <configuration>
-                        <!--
-                            ${org.aspectj:aspectjweaver:jar} is resolved by dependency:properties (see below).
-                            Quoted because the local repository path may contain spaces.
-                        -->
                         <!-- The Cucumber runners are the only test entry points -->
                         <includes>
                             <include>**/*Runner.java</include>
                         </includes>
+                        <!--
+                            ${org.aspectj:aspectjweaver:jar} is resolved by dependency:properties (see below).
+                            Quoted because the local repository path may contain spaces.
+                        -->
                         <argLine>-javaagent:"${org.aspectj:aspectjweaver:jar}" -Dfile.encoding=UTF-8</argLine>
                         <systemPropertyVariables>
                             <allure.results.directory>${allure.results.directory}</allure.results.directory>

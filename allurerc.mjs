@@ -5,7 +5,6 @@
 const env = process.env;
 
 export default {
-  name: "SDET Evaluation - Test Report",
   output: "./allure-report",
 
   // One report, one tab per module: each test is routed by the Cucumber tag of its feature.

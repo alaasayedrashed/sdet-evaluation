@@ -87,11 +87,13 @@ public final class AppLauncher {
                 .map(screen -> ExpectedConditions.presenceOfElementLocated(screen.marker()))
                 .toArray(ExpectedCondition[]::new));
 
-    for (int dismissed = 0; dismissed < SYSTEM_SCREENS.size(); dismissed++) {
+    // At most one attempt per known screen: they can appear one after another
+    int maxAttempts = SYSTEM_SCREENS.size();
+    for (int attempt = 0; attempt < maxAttempts; attempt++) {
       try {
         probe.until(anyScreen);
-      } catch (TimeoutException noneShown) {
-        return;
+      } catch (TimeoutException _) {
+        return; // none shown
       }
       SYSTEM_SCREENS.stream()
           .filter(screen -> !driver.findElements(screen.marker()).isEmpty())

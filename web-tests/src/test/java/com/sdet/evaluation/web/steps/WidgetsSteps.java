@@ -21,7 +21,7 @@ import java.util.Map;
 /** Steps for the Widgets demos (Controlgroup, Datepicker) and the Widget Factory utility. */
 public class WidgetsSteps {
 
-  /** One rental-car booking, built from a two-column Gherkin table. */
+  /** One rental-car booking, built from a Gherkin data table row. */
   public record RentalCarBooking(
       String carType, String transmission, boolean insurance, int cars) {}
 
