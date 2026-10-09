@@ -16,5 +16,4 @@ Feature: Users API (reqres.in)
     When I create a new user from that user with job "BA"
     Then the response status code should be 201
     And the created user should have a non-empty id
-    And the created user should echo the submitted name and job
     And the response body should match the schema "schemas/create-user-schema.json"

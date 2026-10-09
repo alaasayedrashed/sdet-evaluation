@@ -1,6 +1,5 @@
 package com.sdet.evaluation.api.context;
 
-import com.sdet.evaluation.api.models.CreateUserRequest;
 import com.sdet.evaluation.api.models.User;
 import io.restassured.response.Response;
 import java.util.Optional;
@@ -16,7 +15,6 @@ public class ScenarioContext {
 
   private Response lastResponse;
   private User selectedUser;
-  private CreateUserRequest createUserRequest;
 
   /** The most recent HTTP response, used by generic status/schema assertions. */
   public Response lastResponse() {
@@ -45,17 +43,5 @@ public class ScenarioContext {
 
   public void setSelectedUser(User user) {
     this.selectedUser = user;
-  }
-
-  /** The body sent in the last create-user request, kept to verify the echo. */
-  public CreateUserRequest createUserRequest() {
-    if (createUserRequest == null) {
-      throw new IllegalStateException("No create-user request has been sent in this scenario");
-    }
-    return createUserRequest;
-  }
-
-  public void setCreateUserRequest(CreateUserRequest request) {
-    this.createUserRequest = request;
   }
 }

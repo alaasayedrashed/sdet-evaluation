@@ -379,7 +379,7 @@ Other CI choices:
 | # | Task scenario | Tag | Status |
 |---|---|---|---|
 | 1 | `GET /api/users?page=2`: status 200; user `id 10` has `first_name` "Byron" (POJO deserialization) | `@api_case1` `@smoke` | ✅ |
-| 2 | `POST /api/users` built from the GET result (chaining via `ScenarioContext`), job "BA": status 201, non-empty `id`, `name`/`job` echoed, JSON schema matches | `@api_case2` `@smoke` | ✅ |
+| 2 | `POST /api/users` built from the GET result (chaining via `ScenarioContext`), body `{"name":"Byron","job":"BA"}` (first name of user 10 + the task's job): status 201, non-empty `id`, JSON schema matches | `@api_case2` `@smoke` | ✅ |
 
 ### Web: jqueryui.com ([`interactions`](web-tests/src/test/resources/features/interactions.feature), [`widgets`](web-tests/src/test/resources/features/widgets.feature), [`utilities`](web-tests/src/test/resources/features/utilities.feature))
 

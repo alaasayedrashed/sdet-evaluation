@@ -19,9 +19,4 @@ public class User {
   private String lastName;
 
   private String avatar;
-
-  /** First and last name separated by a space, e.g. {@code Byron Fields}. */
-  public String fullName() {
-    return firstName + " " + lastName;
-  }
 }
