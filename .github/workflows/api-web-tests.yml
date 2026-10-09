@@ -21,8 +21,8 @@ jobs:
     needs: lint
     runs-on: ubuntu-24.04
     timeout-minutes: 30
-    # Official Playwright Java image (same as the Dockerfile): Maven and browsers preinstalled,
-    # so there is no browser or OS-package install step
+    # Official Playwright Java image (same as the Dockerfile): JDK 25, Maven and browsers
+    # preinstalled, so there is no JDK, browser or OS-package install step
     container:
       image: mcr.microsoft.com/playwright/java:v1.63.0-noble
     env:
@@ -31,13 +31,6 @@ jobs:
     steps:
       - name: Check out
         uses: actions/checkout@v7
-
-      # The image already has OpenJDK 25; use Temurin 25 like every other workflow
-      - name: Set up JDK 25 (Temurin)
-        uses: actions/setup-java@v6
-        with:
-          distribution: temurin
-          java-version: "25"
 
       - name: Cache Maven repository
         uses: actions/cache@v6
